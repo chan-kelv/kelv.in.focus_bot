@@ -1,6 +1,6 @@
 require('dotenv').config()
 const tmi = require('tmi.js');
-const fs = require("fs");
+const factsBuilder = require("./factsBuilder")
 
 
 // Define configuration options
@@ -32,19 +32,20 @@ function onMessageHandler (target, context, msg, self) {
     const commandName = msg.trim();
 
     // If the command is known, let's execute it
-    if (commandName === '!dice') {
-        const num = rollDice();
-        client.say(target, `You rolled a ${num}`);
+    if (commandName == "!birdFact") {
+        const fact = printBirdFact().trim()
+        client.say(target, fact)
         console.log(`* Executed ${commandName} command`);
     } else {
         console.log(`* Unknown command ${commandName}`);
     }
 }
 
-// Function called when the "dice" command is issued
-function rollDice () {
-    const sides = 6;
-    return Math.floor(Math.random() * sides) + 1;
+function printBirdFact() {
+    const max = f.facts.length - 1
+    const index = Math.floor(Math.random() * max);
+    let fact = f.facts[index][0].replace("\\\\", "") // i hate this...TODO fix parser or figure out a better way to store data
+    return  fact
 }
 
 // Called every time the bot connects to Twitch chat
@@ -52,22 +53,10 @@ function onConnectedHandler (addr, port) {
     console.log(`* Connected to ${addr}:${port}`);
 }
 
-const csv = require('fast-csv');
-const options = {
-    delimiter: ","
-}
-const facts = [];
-fs.createReadStream("bird_facts.csv", "utf-8")
-    .pipe(csv.parse(options))
-    .on("error", (error) => {
-        console.log(error);
-    })
-    .on("data", (row) => {
-        facts.push(row);
-    })
-    .on("end", (rowCount) => {
-        console.log(rowCount);
-        // console.log(facts);
-        console.log("fact2:" + facts[3])
-    });
+const f = new factsBuilder()
+f.read(()=> {
+    // TODO should init client in here because stream reading takes time. Figure out how to do that with promises
+})
 
+// Parsing the facts takes time, but no one will realistically call the bot when launched so should be ok for now? Fix with the TODO
+client.connect().then()
