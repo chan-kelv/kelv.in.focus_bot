@@ -1,5 +1,7 @@
 require('dotenv').config()
 const tmi = require('tmi.js');
+const fs = require("fs");
+
 
 // Define configuration options
 const opts = {
@@ -20,7 +22,7 @@ client.on('message', onMessageHandler);
 client.on('connected', onConnectedHandler);
 
 // Connect to Twitch:
-client.connect().then(r => "");
+// client.connect().then(r => "");
 
 // Called every time a message comes in
 function onMessageHandler (target, context, msg, self) {
@@ -49,3 +51,23 @@ function rollDice () {
 function onConnectedHandler (addr, port) {
     console.log(`* Connected to ${addr}:${port}`);
 }
+
+const csv = require('fast-csv');
+const options = {
+    delimiter: ","
+}
+const facts = [];
+fs.createReadStream("bird_facts.csv", "utf-8")
+    .pipe(csv.parse(options))
+    .on("error", (error) => {
+        console.log(error);
+    })
+    .on("data", (row) => {
+        facts.push(row);
+    })
+    .on("end", (rowCount) => {
+        console.log(rowCount);
+        // console.log(facts);
+        console.log("fact2:" + facts[3])
+    });
+
